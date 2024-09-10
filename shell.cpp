@@ -15,7 +15,9 @@ int main () {
     // TODO: add functionality
     // Create pipe
     int fd[2]; // array to hold the two file descriptors (fd[0] read end) ( f[1] write end)
-    char buf[30];
+    int inp = dup(STDIN_FILENO); // initial input
+    int out = dup(STDOUT_FILENO); // initial output
+    // char buf[30];
     if(pipe(fd) == -1){
         perror("pipe");
         exit(EXIT_FAILURE);
@@ -35,6 +37,7 @@ int main () {
         dup2(fd[1],STDOUT_FILENO); // output redirected to write end used STDOUT_FILENO becuase thats where a program typically writes the output
         // should close write end just in case 
         close(fd[1]); // its closed but all the outputs are already redirected so we good its trapped lol
+         execvp(cmd1[0],cmd1); // ls then run
     }
     
     // Create another child to run second command
@@ -52,11 +55,9 @@ int main () {
         dup2(fd[0],STDIN_FILENO); // output redirected to write end used STDOUT_FILENO becuase thats where a program typically writes the output
         // should close read end just in case 
         close(fd[0]); // its closed but all the inputs are already redirected so we good its trapped lol
+        execvp(cmd2[0],cmd2); // tr then run    
     }
-    // good practice to close when done so close parent now because the child processes alreayd have everything they need
-    close(fd[0]); // bye bye read ;(
-    close(fd[1]); // bye bye write :(
     // Reset the input and output file descriptors of the parent.
-    
-
+    dup2(inp, STDIN_FILENO);
+    dup2(out, STDOUT_FILENO);
 }
